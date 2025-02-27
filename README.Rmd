@@ -53,10 +53,10 @@ The data currently contained in `data_seal` consists of all research grade
 observations of Cape Fur Seals in South Africa, dead or alive, but, we 
 specifically want observations of *dead* seals. It's time to *"cull"*. 
 
-```{r filtering the data}
-# Check available column names
-colnames(data_seal)
+The first step is to define the keywords that indicate death in seals. These 
+keywords will help us to filter out observations of dead seals. 
 
+```{r define keywords}
 # Define keywords indicating death in the seals
 death_keywords <- c("dead",
                     "died",
@@ -67,6 +67,22 @@ death_keywords <- c("dead",
                     "lifeless",
                     "corpse")
 
+```
+
+Now that we've set the keywords, we should check the column names to know which
+columns to filter for the keywords. 
+
+```{r check column names}
+# Check available column names to know which columns to check for 
+colnames(data_seal)
+
+```
+
+So, the main columns we would want to check are the `tag_list` and `description`
+columns, since these contain any additional information regarding the 
+observation. So let's filter these.
+
+```{r filtering the data}
 # Convert tags and description to lowercase to avoid case sensitivity
 seal_dead <- data_seal %>%
   filter(
@@ -78,8 +94,9 @@ seal_dead <- data_seal %>%
   select(id, species_guess, datetime, latitude, longitude, 
          tag_list, description, place_guess)
 
-# Check the first few rows
+# Check the first few rows to make sure the data is correct
 head(seal_dead)
 
 ```
+
 
