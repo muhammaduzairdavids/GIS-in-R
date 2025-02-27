@@ -12,17 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ## **Load in the packages**
 
 ```{r loading packages}
-library(rinat)         # iNaturalist data
-library(sf)            # Spatial data handling
-library(ggplot2)       # Static maps
-library(ggspatial)     # Static maps
-library(leaflet)       # Interactive maps
-library(rnaturalearth) # Base map data
-library(terra)         # Raster processing (if needed)
-library(tidyverse)     # Data cleaning
-library(dplyr)         # Data wrangling
-library(readr)         # Reading/writing .csv files
-library(stringr)  # Advanced string filtering
+library(rinat)             # iNaturalist data
+library(sf)                # Spatial data handling
+library(ggplot2)           # Static maps
+library(ggspatial)         # Static maps
+library(leaflet)           # Interactive maps
+library(rnaturalearth)     # Base map data
+library(rnaturalearthdata) # Additional features
+library(terra)             # Raster processing (if needed)
+library(tidyverse)         # Data cleaning
+library(dplyr)             # Data wrangling
+library(readr)             # Reading/writing .csv files
+library(stringr)           # Advanced string filtering
 ```
 
 ## **Getting our data from iNat**
@@ -32,7 +33,8 @@ from iNaturalist. So to ensure quality data we need to specify that it the data
 must be *research grade* and we also only want data from South Africa. As for 
 how many results we need to draw from, if you look up [Cape Fur Seal](https://www.inaturalist.org/observations?taxon_id=346947) on iNat, 
 4,434 observations show up, so we'll just set `maxresults = ` to 4000 to make 
-sure we draw from as many of those observations as possible. 
+sure we draw from as many of those observations as possible (and just hope my
+laptop will survive). 
 
 
 ```{r retrieve iNat data}
@@ -83,7 +85,7 @@ columns, since these contain any additional information regarding the
 observation. So let's filter these.
 
 ```{r filtering the data}
-# Convert tags and description to lowercase to avoid case sensitivity
+# Convert tags and description to lowercase to avoid case sensitivity when filtering
 seal_dead <- data_seal %>%
   filter(
     str_detect(tolower(tag_list), 
@@ -99,4 +101,54 @@ head(seal_dead)
 
 ```
 
+## **Convert the data to a spatial object (sf)**
+
+Now that we've got the data, we can save the observations as a spatial object 
+that can be plotted. 
+
+```{r convert to sf}
+# Convert to sf object (WGS84 - EPSG:4326)
+seal_dead_sf <- st_as_sf(seal_dead,
+                         coords = c("longitude", "latitude"),
+                         crs = 4326)
+
+```
+
+## **Getting the base map**
+
+So, we have our point data, but we don't have a base map to plot the data on. 
+Let's download a base map of South Africa from the `rnaturalearth` package.
+
+```{r download base map}
+# Get world map data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Filter for South Africa
+south_africa <- world[world$name == "South Africa", ]
+
+# Plot base map with ggplot2
+ggplot() +
+  geom_sf(data = south_africa, fill = "lightgray", color = "black") +
+  labs(title = "Base Map of South Africa") +
+  theme_minimal()
+
+```
+
+## **Adding natural features**
+
+Our base map is looking a bit bare, so why don't we add a few natural features 
+from the `rnaturalearthdata` package.
+
+```{r add coastline and rivers}
+# Get coastlines and rivers
+coastline <- ne_coastline(scale = "medium", returnclass = "sf")
+
+ggplot() +
+  geom_sf(data = south_africa, fill = "lightgray", color = "black") +  # Base country
+  geom_sf(data = coastline, color = "blue") +  # Coastline
+  labs(title = "South Africa Base Map with Rivers & Coastlines") +
+  theme_minimal()
+
+
+```
 
