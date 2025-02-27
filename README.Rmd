@@ -1,0 +1,85 @@
+---
+title: "Mapping the occurence of Cape Fur Seal carcasses"
+author: "Muhammad Uzair Davids"
+date: "2025-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Load in the packages**
+
+```{r loading packages}
+library(rinat)         # iNaturalist data
+library(sf)            # Spatial data handling
+library(ggplot2)       # Static maps
+library(ggspatial)     # Static maps
+library(leaflet)       # Interactive maps
+library(rnaturalearth) # Base map data
+library(terra)         # Raster processing (if needed)
+library(tidyverse)     # Data cleaning
+library(dplyr)         # Data wrangling
+library(readr)         # Reading/writing .csv files
+library(stringr)  # Advanced string filtering
+```
+
+## **Getting our data from iNat**
+
+Before we can get started, we first need to get our data. We will be using data
+from iNaturalist. So to ensure quality data we need to specify that it the data
+must be *research grade* and we also only want data from South Africa. As for 
+how many results we need to draw from, if you look up [Cape Fur Seal](https://www.inaturalist.org/observations?taxon_id=346947) on iNat, 
+4,434 observations show up, so we'll just set `maxresults = ` to 4000 to make 
+sure we draw from as many of those observations as possible. 
+
+
+```{r retrieve iNat data}
+# Query iNaturalist for Cape Fur Seal (Arctocephalus pusillus) sightings
+data_seal <- get_inat_obs(
+  taxon_name = "Arctocephalus pusillus",
+  quality = "research", # Only research-grade sightings
+  geo = TRUE,           # Must have geolocation
+  place_id = 113055,    # Place ID for South Africa in iNaturalist
+  maxresults = 4000     # Adjust as needed
+)
+
+```
+
+## **Filter observations**
+
+The data currently contained in `data_seal` consists of all research grade
+observations of Cape Fur Seals in South Africa, dead or alive, but, we 
+specifically want observations of *dead* seals. It's time to *"cull"*. 
+
+```{r filtering the data}
+# Check available column names
+colnames(data_seal)
+
+# Define keywords indicating death in the seals
+death_keywords <- c("dead",
+                    "died",
+                    "carcass",
+                    "deceased",
+                    "stranded",
+                    "washed up",
+                    "lifeless",
+                    "corpse")
+
+# Convert tags and description to lowercase to avoid case sensitivity
+seal_dead <- data_seal %>%
+  filter(
+    str_detect(tolower(tag_list), 
+               paste(death_keywords, collapse = "|")) |  # Check tags
+    str_detect(tolower(description), 
+               paste(death_keywords, collapse = "|")) # Check description
+  ) %>%
+  select(id, species_guess, datetime, latitude, longitude, 
+         tag_list, description, place_guess)
+
+# Check the first few rows
+head(seal_dead)
+
+```
+
