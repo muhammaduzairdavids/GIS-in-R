@@ -18,6 +18,7 @@ library(ggplot2)           # Static maps
 library(ggspatial)         # Static maps
 library(leaflet)           # Interactive maps
 library(htmltools)         # Interactive maps
+library(mapview)           # Interactive maps
 library(rnaturalearth)     # Base map data
 library(rnaturalearthdata) # Additional features
 library(terra)             # Raster processing (if needed)
@@ -106,6 +107,8 @@ write_csv(seal_dead, "data/seal_dead.csv")
 
 ```
 
+
+
 ## **Convert the data to a spatial object (sf)**
 
 Now that we've got the data, we can save the observations as a spatial object 
@@ -146,6 +149,49 @@ ggplot() +
   theme_minimal()
 
 ```
+
+## **Some extra data wrangling**
+
+You'll notice that even though we set `place_id` to only pull iNat data from 
+South Africa, some of the points are way outside the South African boundary,
+and extend into Namibia, so we'll need to get rid of those. To do this, we can 
+create a spatial filter.
+
+```{r spatial filter}
+filter_south_africa_sf <- function(seal_dead_sf) {
+  # Ensure the input is an sf object
+  if (!inherits(seal_dead_sf, "sf")) {
+    stop("Error: seal_dead_sf must be an sf object with point geometries.")
+  }
+
+  # Filter points that fall inside South Africa
+  filtered_sf <- st_intersection(seal_dead_sf, south_africa)
+
+  return(filtered_sf)  # Return filtered dataset as an sf object
+}
+
+# Apply function to filter seal_dead_sf
+seal_dead_sa <- filter_south_africa_sf(seal_dead_sf)
+
+# Preview filtered data
+print(seal_dead_sa)
+
+```
+
+Now that we've set the filter, let's try plotting the points on the map again.
+
+```{r download base map}
+# Plot base map with 
+ggplot() +
+  geom_sf(data = south_africa, fill = "lightgray", color = "black") +
+  geom_sf(data = seal_dead_sa, aes(color = "Carcass Sightings"), size = 2) +
+  scale_color_manual(values = c("red")) +
+  labs(title = "Seal Carcass Sightings in South Africa") +
+  theme_minimal()
+
+```
+
+It worked! Now onto the interactive map!
 
 ## **Making the map interactive**
 
