@@ -26,6 +26,7 @@ library(tidyverse)         # Data cleaning
 library(dplyr)             # Data wrangling
 library(readr)             # Reading/writing .csv files
 library(stringr)           # Advanced string filtering
+library(lubridate)         # For date filtering
 ```
 
 ## **Getting our data from iNat**
@@ -58,7 +59,13 @@ observations of Cape Fur Seals in South Africa, dead or alive, but, we
 specifically want observations of *dead* seals. It's time to *"cull"*. 
 
 The first step is to define the keywords that indicate death in seals. These 
-keywords will help us to filter out observations of dead seals. 
+keywords will help us to filter out observations of dead seals. However, these
+keywords may also bring back results which retrieve observations of skeletal
+remains, which is not what we want, since the presence of skeletal remains may
+mean that the animal died long before the earliest identified case of rabies 
+outbreaks, which according to a government report is August 2022 
+[(Maja, 2024)](https://www.dalrrd.gov.za/images/outbreaks/Rabies/2024/rabies-in-seals_dalrrd-report_oct2024_final.pdf). For this reason we will also be filtering out observations 
+before this date.  
 
 ```{r define keywords}
 # Define keywords indicating death in the seals
@@ -70,6 +77,12 @@ death_keywords <- c("dead",
                     "washed up",
                     "lifeless",
                     "corpse")
+
+# Define exclusion keywords for skeletal remains
+exclude_keywords <- c("skeleton", 
+                      "skeletal", 
+                      "bones",
+                      "skull")
 
 ```
 
@@ -93,21 +106,24 @@ seal_dead <- data_seal %>%
     str_detect(tolower(tag_list), 
                paste(death_keywords, collapse = "|")) |  # Check tags
     str_detect(tolower(description), 
-               paste(death_keywords, collapse = "|")) # Check description
+               paste(death_keywords, collapse = "|"))    # Check description
   ) %>%
-  select(id, species_guess, datetime, latitude, longitude, 
-         tag_list, description, place_guess)
+  filter(
+    # Must NOT contain skeletal-related words
+    !str_detect(tolower(tag_list), paste(exclude_keywords, collapse = "|")) &
+    !str_detect(tolower(description), paste(exclude_keywords, collapse = "|"))
+  ) %>%
+  filter(
+    # Ensures observations are no earlier than August 2022
+    observed_on >= as.Date("2022-08-01") 
+  )
 
 # Check the first few rows to make sure the data is correct
 head(seal_dead)
 
-# Save as CSV in the data file so we have a file with the necessary metadata 
-# available for anyone interested
-write_csv(seal_dead, "data/seal_dead.csv")
-
 ```
 
-
+So we've retrieved all the data of dead seals observed in 
 
 ## **Convert the data to a spatial object (sf)**
 
@@ -121,10 +137,6 @@ requires data to be projected at global projection.
 seal_dead_sf <- st_as_sf(seal_dead,
                          coords = c("longitude", "latitude"),
                          crs = 4326)
-
-# Save as GeoJSON for GIS applications for anyone who would like to download 
-# the file for themselves
-st_write(seal_dead_sf, "data/seal_dead.geojson", delete_dsn = TRUE)
 
 ```
 
@@ -140,12 +152,18 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 # Filter for South Africa
 south_africa <- world[world$name == "South Africa", ]
 
+```
+
+Now that we have the base map saved, we can plot our points.
+
+```{r plot the map}
 # Plot base map with 
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
   geom_sf(data = seal_dead_sf, aes(color = "Carcass Sightings"), size = 2) +
   scale_color_manual(values = c("red")) +
-  labs(title = "Seal Carcass Sightings in South Africa") +
+  labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
+       Carcass Sightings in South Africa") +
   theme_minimal()
 
 ```
@@ -176,17 +194,26 @@ seal_dead_sa <- filter_south_africa_sf(seal_dead_sf)
 # Preview filtered data
 print(seal_dead_sa)
 
+# Save as CSV in the data file so we have a file with the necessary metadata 
+# available for anyone interested
+write_csv(seal_dead_sa, "data/seal_dead.csv")
+
+# Save as GeoJSON for GIS applications for anyone who would like to download 
+# the file for themselves
+st_write(seal_dead_sa, "data/seal_dead.geojson", delete_dsn = TRUE)
+
 ```
 
 Now that we've set the filter, let's try plotting the points on the map again.
 
-```{r download base map}
+```{r second attempt at the plot}
 # Plot base map with 
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  geom_sf(data = seal_dead_sa, aes(color = "Carcass Sightings"), size = 2) +
+  geom_sf(data = seal_dead_sa, aes(color = "Carcass observations"), size = 2) +
   scale_color_manual(values = c("red")) +
-  labs(title = "Seal Carcass Sightings in South Africa") +
+  labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
+       Carcass Sightings in South Africa") +
   theme_minimal()
 
 ```
@@ -208,11 +235,11 @@ leaflet() %>%
               fillOpacity = 0.5, 
               weight = 1, 
               popup = ~name) %>%
-  addCircleMarkers(data = seal_dead_sf, 
+  addCircleMarkers(data = seal_dead_sa, 
                    color = "red", 
                    radius = 3, 
                    popup = ~paste("Location:", place_guess)) %>%
-  addLegend(position = "bottomright", colors = "red", labels = "Carcass Sightings") %>%
+  addLegend(position = "bottomright", colors = "red", labels = "Carcass observations") %>%
   addScaleBar(position = "bottomleft") %>%
   addMiniMap(toggleDisplay = TRUE)
 
