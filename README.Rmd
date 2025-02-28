@@ -17,6 +17,7 @@ library(sf)                # Spatial data handling
 library(ggplot2)           # Static maps
 library(ggspatial)         # Static maps
 library(leaflet)           # Interactive maps
+library(htmltools)         # Interactive maps
 library(rnaturalearth)     # Base map data
 library(rnaturalearthdata) # Additional features
 library(terra)             # Raster processing (if needed)
@@ -99,12 +100,18 @@ seal_dead <- data_seal %>%
 # Check the first few rows to make sure the data is correct
 head(seal_dead)
 
+# Save as CSV in the data file so we have a file with the necessary metadata 
+# available for anyone interested
+write_csv(seal_dead, "data/seal_dead.csv")
+
 ```
 
 ## **Convert the data to a spatial object (sf)**
 
 Now that we've got the data, we can save the observations as a spatial object 
-that can be plotted. 
+that can be plotted. As for the projection of the data, we will set it to WGS84
+since the end goal is to map the map interactive, and the `leaflet` package 
+requires data to be projected at global projection. 
 
 ```{r convert to sf}
 # Convert to sf object (WGS84 - EPSG:4326)
@@ -112,9 +119,13 @@ seal_dead_sf <- st_as_sf(seal_dead,
                          coords = c("longitude", "latitude"),
                          crs = 4326)
 
+# Save as GeoJSON for GIS applications for anyone who would like to download 
+# the file for themselves
+st_write(seal_dead_sf, "data/seal_dead.geojson", delete_dsn = TRUE)
+
 ```
 
-## **Getting the base map**
+## **Getting the base map and plotting our points**
 
 So, we have our point data, but we don't have a base map to plot the data on. 
 Let's download a base map of South Africa from the `rnaturalearth` package.
@@ -126,28 +137,38 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 # Filter for South Africa
 south_africa <- world[world$name == "South Africa", ]
 
-# Plot base map with ggplot2
+# Plot base map with 
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  labs(title = "Base Map of South Africa") +
+  geom_sf(data = seal_dead_sf, aes(color = "Carcass Sightings"), size = 2) +
+  scale_color_manual(values = c("red")) +
+  labs(title = "Seal Carcass Sightings in South Africa") +
   theme_minimal()
 
 ```
 
-## **Adding natural features**
+## **Making the map interactive**
 
-Our base map is looking a bit bare, so why don't we add a few natural features 
-from the `rnaturalearthdata` package.
+To make our map interactive we'll use `leaflet`, this will allow people to zoom
+in and out of the map and investigate individual points on the map. 
 
-```{r add coastline and rivers}
-# Get coastlines and rivers
-coastline <- ne_coastline(scale = "medium", returnclass = "sf")
-
-ggplot() +
-  geom_sf(data = south_africa, fill = "lightgray", color = "black") +  # Base country
-  geom_sf(data = coastline, color = "blue") +  # Coastline
-  labs(title = "South Africa Base Map with Rivers & Coastlines") +
-  theme_minimal()
+```{r interactive mapping}
+# Create leaflet map
+leaflet() %>%
+  addTiles() %>%  # Add OpenStreetMap basemap
+  addPolygons(data = south_africa, 
+              color = "black", 
+              fillColor = "lightgray", 
+              fillOpacity = 0.5, 
+              weight = 1, 
+              popup = ~name) %>%
+  addCircleMarkers(data = seal_dead_sf, 
+                   color = "red", 
+                   radius = 3, 
+                   popup = ~paste("Location:", place_guess)) %>%
+  addLegend(position = "bottomright", colors = "red", labels = "Carcass Sightings") %>%
+  addScaleBar(position = "bottomleft") %>%
+  addMiniMap(toggleDisplay = TRUE)
 
 
 ```
