@@ -1,0 +1,26 @@
+{
+"type": "FeatureCollection",
+"name": "seal_colony",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Colony.Name": "Black Rocks" }, "geometry": { "type": "Point", "coordinates": [ 26.26333333, -33.83783333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Robberg" }, "geometry": { "type": "Point", "coordinates": [ 23.3855, -34.1 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Seal Island MB" }, "geometry": { "type": "Point", "coordinates": [ 22.117, -34.15033333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Quoin Rock" }, "geometry": { "type": "Point", "coordinates": [ 19.66833333, -34.78716667 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Geyser Rock" }, "geometry": { "type": "Point", "coordinates": [ 19.4125, -34.68866667 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Seal Island FB" }, "geometry": { "type": "Point", "coordinates": [ 18.58333333, -34.13833333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Duikerklip" }, "geometry": { "type": "Point", "coordinates": [ 18.30216667, -34.05833333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Robbesteen" }, "geometry": { "type": "Point", "coordinates": [ 18.399841, -33.645309 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Vondeling Island" }, "geometry": { "type": "Point", "coordinates": [ 17.98263, -33.152664 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Jutten Island" }, "geometry": { "type": "Point", "coordinates": [ 17.95283333, -33.08 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Jacobs Reef" }, "geometry": { "type": "Point", "coordinates": [ 17.860962, -32.955326 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Cape Columbine" }, "geometry": { "type": "Point", "coordinates": [ 17.845, -32.82583333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Paternoster Rocks" }, "geometry": { "type": "Point", "coordinates": [ 17.87166667, -32.73833333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Bird Island" }, "geometry": { "type": "Point", "coordinates": [ 18.30258, -32.0899 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Elephant Rock" }, "geometry": { "type": "Point", "coordinates": [ 18.14416667, -31.64383333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Namakwa" }, "geometry": { "type": "Point", "coordinates": [ 17.41122, -30.56218 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Kleinsee" }, "geometry": { "type": "Point", "coordinates": [ 16.99666667, -29.5695 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Cliff Point" }, "geometry": { "type": "Point", "coordinates": [ 16.81833333, -29.09833333 ] } },
+{ "type": "Feature", "properties": { "Colony.Name": "Buchu Twins" }, "geometry": { "type": "Point", "coordinates": [ 16.563, -28.7595 ] } }
+]
+}

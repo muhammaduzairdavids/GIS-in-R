@@ -136,7 +136,12 @@ represented by the data I compiled from the paper and report, especially since
 the Kirkman *et al.* (2012) paper only contains the location data of breeding
 colonies and the government report only contains the colonies or locations 
 where rabies outbreaks were reported. It should also be noted that colony data
-from Maja (2024) was only taken from areas strictly labelled with "colony".
+from Maja (2024) was only taken from areas strictly labelled with "colony". The
+Kirkman *et al.* (2012) data may also be slightly off, since the original 
+coordinates were in *degrees and decimal minutes* format rather than 
+*decimal degrees* format, which is the coordinate format we want. I had tried 
+to correct some of these when I compiled the `.csv`, but some locations were 
+difficult to pinpoint by name. 
 
 Anyhoo, let's start by loading the colony data which I compiled into a .`csv` 
 using information from both Kirkman *et al* (2012) and Maja (2024). 
@@ -205,79 +210,28 @@ ggplot() +
 
 You'll notice that even though we set `place_id` to only pull iNat data from 
 South Africa, some of the points are way outside the South African boundary,
-and extend into Namibia, the same with the seal colonies so we'll need to get 
-rid of those. To do this, we can create a spatial filter.
+and extend into Namibia, so we'll need to get rid of those. To do this, we can 
+create a spatial filter.
+
 
 ```{r spatial filter}
-filter_south_africa_sf <- function(seal_dead_sf, colony_sf) {
+filter_south_africa_sf <- function(seal_dead_sf) {
   # Ensure the input is an sf object
   if (!inherits(seal_dead_sf, "sf")) {
     stop("Error: seal_dead_sf must be an sf object with point geometries.")
   }
-  
-  if (!inherits(colony_sf, "sf")) {
-    stop("Error: colony_sf must be an sf object with point geometries.")
-  }
 
-  # Filter points that fall inside South Africa for both datasets
-  filtered_seal_dead_sf <- st_intersection(seal_dead_sf, south_africa)
-  filtered_colony_sf <- st_intersection(colony_sf, south_africa)
+  # Filter points that fall inside South Africa
+  filtered_sf <- st_intersection(seal_dead_sf, south_africa)
 
-  # Return filtered datasets as a list of sf objects
-  return(list(filtered_seal_dead_sf = filtered_seal_dead_sf, 
-              filtered_colony_sf = filtered_colony_sf))
+  return(filtered_sf)  # Return filtered dataset as an sf object
 }
 
-# Apply function to filter both seal_dead_sf and colony_sf
-filtered_data <- filter_south_africa_sf(seal_dead_sf, colony_sf)
-
-# Access filtered datasets
-seal_dead_sa <- filtered_data$filtered_seal_dead_sf
-colony_sa <- filtered_data$filtered_colony_sf
+# Apply function to filter seal_dead_sf
+seal_dead_sa <- filter_south_africa_sf(seal_dead_sf)
 
 # Preview filtered data
-print(seal_dead_sa)
-print(colony_sa)
-
-# Try again...
-filter_south_africa_sf <- function(seal_dead_sf, colony_sf) {
-  # Ensure the input is an sf object
-  if (!inherits(seal_dead_sf, "sf")) {
-    stop("Error: seal_dead_sf must be an sf object with point geometries.")
-  }
-  
-  if (!inherits(colony_sf, "sf")) {
-    stop("Error: colony_sf must be an sf object with point geometries.")
-  }
-
-  # Filter points that fall within South Africa for both datasets using st_within
-  seal_dead_within_sa <- st_within(seal_dead_sf, south_africa)
-  colony_within_sa <- st_within(colony_sf, south_africa)
-
-  # Convert list results from st_within to logical vectors (TRUE if within, FALSE otherwise)
-  seal_dead_within_sa_logical <- lengths(seal_dead_within_sa) > 0
-  colony_within_sa_logical <- lengths(colony_within_sa) > 0
-
-  # Subset based on the logical vectors
-  filtered_seal_dead_sf <- seal_dead_sf[seal_dead_within_sa_logical, ]
-  filtered_colony_sf <- colony_sf[colony_within_sa_logical, ]
-
-  # Return filtered datasets as a list of sf objects
-  return(list(filtered_seal_dead_sf = filtered_seal_dead_sf, filtered_colony_sf = filtered_colony_sf))
-}
-
-# Apply function to filter both seal_dead_sf and colony_sf
-filtered_data <- filter_south_africa_sf(seal_dead_sf, colony_sf)
-
-# Access filtered datasets
-seal_dead_sa <- filtered_data$filtered_seal_dead_sf
-colony_sa <- filtered_data$filtered_colony_sf
-
-# Preview filtered data
-print(seal_dead_sa)
-print(colony_sa)
-
-# And again...
+head(seal_dead_sa)
 
 ```
 
@@ -288,7 +242,7 @@ Now that we've set the filter, let's try plotting the points on the map again.
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
   geom_sf(data = seal_dead_sa, aes(color = "Carcass Observations"), size = 2) +
-   geom_sf(data = colony_sa, aes(color = "Seal Colonies"), shape = 17, 
+   geom_sf(data = colony_sf, aes(color = "Seal Colonies"), shape = 17, 
            size = 3) +
   scale_color_manual(values = c("red", "blue")) +
   labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
@@ -307,11 +261,10 @@ Okay, cool, now that that's sorted, we can also save the data as `.csv` or
 # available for anyone interested
 write_csv(seal_dead_sa, "data/seal_dead.csv")
 
-# I'll save the colony_sa data as a .csv too since this'll only contain the 
-
 # Save as GeoJSON for GIS applications for anyone who would like to download 
 # the file for themselves
 st_write(seal_dead_sa, "data/seal_dead.geojson", delete_dsn = TRUE)
+st_write(colony_sf, "data/seal_colony.geojson", delete_dsn = TRUE)
 
 ```
 
