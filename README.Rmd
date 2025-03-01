@@ -63,7 +63,7 @@ keywords will help us to filter out observations of dead seals. However, these
 keywords may also bring back results which retrieve observations of skeletal
 remains, which is not what we want, since the presence of skeletal remains may
 mean that the animal died long before the earliest identified case of rabies 
-outbreaks, which according to a government report is August 2022 
+outbreaks, which according to a government report is 5 August 2022 
 [(Maja, 2024)](https://www.dalrrd.gov.za/images/outbreaks/Rabies/2024/rabies-in-seals_dalrrd-report_oct2024_final.pdf). For this reason we will also be filtering out observations 
 before this date.  
 
@@ -114,8 +114,8 @@ seal_dead <- data_seal %>%
     !str_detect(tolower(description), paste(exclude_keywords, collapse = "|"))
   ) %>%
   filter(
-    # Ensures observations are no earlier than August 2022
-    observed_on >= as.Date("2022-08-01") 
+    # Ensures observations are no earlier than 5 August 2022
+    observed_on >= as.Date("2022-08-05") 
   )
 
 # Check the first few rows to make sure the data is correct
@@ -123,7 +123,33 @@ head(seal_dead)
 
 ```
 
-So we've retrieved all the data of dead seals observed in 
+# **Loading the colony and rabies outbreak datasets**
+
+So, we've retrieved all the data of seal carcasses observed since 5 August 2022.
+Now we need data of the seal colonies and rabies outbreaks. Unfortunately, 
+there are no openly available datasets which contain this information, so we'll
+be using data I compiled based on a paper by Kirkman *et al.* (2012) and a 
+government report by Maja (2024). 
+
+**NB:** The location of *all* colonies in South Africa are likely not well 
+represented by the data I compiled from the paper and report, especially since
+the Kirkman *et al.* (2012) paper only contains the location data of breeding
+colonies and the government report only contains the colonies or locations 
+where rabies outbreaks were reported. It should also be noted that colony data
+from Maja (2024) was only taken from areas strictly labelled with "colony".
+
+Anyhoo, let's start by loading the colony data which I compiled into a .`csv` 
+using information from both Kirkman *et al* (2012) and Maja (2024). 
+
+```{r loading the colony data}
+# Read in the .csv
+data_colony <- read.csv("data/data_colony.csv")
+
+# Get a glimpse at our data
+head(data_colony)
+
+```
+
 
 ## **Convert the data to a spatial object (sf)**
 
@@ -133,9 +159,14 @@ since the end goal is to map the map interactive, and the `leaflet` package
 requires data to be projected at global projection. 
 
 ```{r convert to sf}
-# Convert to sf object (WGS84 - EPSG:4326)
+# Convert the dead seal data to sf object (WGS84 - EPSG:4326)
 seal_dead_sf <- st_as_sf(seal_dead,
                          coords = c("longitude", "latitude"),
+                         crs = 4326)
+
+# Convert the colony data to sf object (WGS84 - EPSG:4326)
+colony_sf <- st_as_sf(data_colony,
+                         coords = c("Longitude", "Latitude"),
                          crs = 4326)
 
 ```
@@ -160,8 +191,10 @@ Now that we have the base map saved, we can plot our points.
 # Plot base map with 
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  geom_sf(data = seal_dead_sf, aes(color = "Carcass Sightings"), size = 2) +
-  scale_color_manual(values = c("red")) +
+  geom_sf(data = seal_dead_sf, aes(color = "Carcass Observations"), size = 2) +
+  geom_sf(data = colony_sf, aes(color = "Seal Colonies"), shape = 17, 
+          size = 3) + # Adding the colonies
+  scale_color_manual(values = c("red", "blue")) +
   labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
        Carcass Sightings in South Africa") +
   theme_minimal()
@@ -172,35 +205,79 @@ ggplot() +
 
 You'll notice that even though we set `place_id` to only pull iNat data from 
 South Africa, some of the points are way outside the South African boundary,
-and extend into Namibia, so we'll need to get rid of those. To do this, we can 
-create a spatial filter.
+and extend into Namibia, the same with the seal colonies so we'll need to get 
+rid of those. To do this, we can create a spatial filter.
 
 ```{r spatial filter}
-filter_south_africa_sf <- function(seal_dead_sf) {
+filter_south_africa_sf <- function(seal_dead_sf, colony_sf) {
   # Ensure the input is an sf object
   if (!inherits(seal_dead_sf, "sf")) {
     stop("Error: seal_dead_sf must be an sf object with point geometries.")
   }
+  
+  if (!inherits(colony_sf, "sf")) {
+    stop("Error: colony_sf must be an sf object with point geometries.")
+  }
 
-  # Filter points that fall inside South Africa
-  filtered_sf <- st_intersection(seal_dead_sf, south_africa)
+  # Filter points that fall inside South Africa for both datasets
+  filtered_seal_dead_sf <- st_intersection(seal_dead_sf, south_africa)
+  filtered_colony_sf <- st_intersection(colony_sf, south_africa)
 
-  return(filtered_sf)  # Return filtered dataset as an sf object
+  # Return filtered datasets as a list of sf objects
+  return(list(filtered_seal_dead_sf = filtered_seal_dead_sf, 
+              filtered_colony_sf = filtered_colony_sf))
 }
 
-# Apply function to filter seal_dead_sf
-seal_dead_sa <- filter_south_africa_sf(seal_dead_sf)
+# Apply function to filter both seal_dead_sf and colony_sf
+filtered_data <- filter_south_africa_sf(seal_dead_sf, colony_sf)
+
+# Access filtered datasets
+seal_dead_sa <- filtered_data$filtered_seal_dead_sf
+colony_sa <- filtered_data$filtered_colony_sf
 
 # Preview filtered data
 print(seal_dead_sa)
+print(colony_sa)
 
-# Save as CSV in the data file so we have a file with the necessary metadata 
-# available for anyone interested
-write_csv(seal_dead_sa, "data/seal_dead.csv")
+# Try again...
+filter_south_africa_sf <- function(seal_dead_sf, colony_sf) {
+  # Ensure the input is an sf object
+  if (!inherits(seal_dead_sf, "sf")) {
+    stop("Error: seal_dead_sf must be an sf object with point geometries.")
+  }
+  
+  if (!inherits(colony_sf, "sf")) {
+    stop("Error: colony_sf must be an sf object with point geometries.")
+  }
 
-# Save as GeoJSON for GIS applications for anyone who would like to download 
-# the file for themselves
-st_write(seal_dead_sa, "data/seal_dead.geojson", delete_dsn = TRUE)
+  # Filter points that fall within South Africa for both datasets using st_within
+  seal_dead_within_sa <- st_within(seal_dead_sf, south_africa)
+  colony_within_sa <- st_within(colony_sf, south_africa)
+
+  # Convert list results from st_within to logical vectors (TRUE if within, FALSE otherwise)
+  seal_dead_within_sa_logical <- lengths(seal_dead_within_sa) > 0
+  colony_within_sa_logical <- lengths(colony_within_sa) > 0
+
+  # Subset based on the logical vectors
+  filtered_seal_dead_sf <- seal_dead_sf[seal_dead_within_sa_logical, ]
+  filtered_colony_sf <- colony_sf[colony_within_sa_logical, ]
+
+  # Return filtered datasets as a list of sf objects
+  return(list(filtered_seal_dead_sf = filtered_seal_dead_sf, filtered_colony_sf = filtered_colony_sf))
+}
+
+# Apply function to filter both seal_dead_sf and colony_sf
+filtered_data <- filter_south_africa_sf(seal_dead_sf, colony_sf)
+
+# Access filtered datasets
+seal_dead_sa <- filtered_data$filtered_seal_dead_sf
+colony_sa <- filtered_data$filtered_colony_sf
+
+# Preview filtered data
+print(seal_dead_sa)
+print(colony_sa)
+
+# And again...
 
 ```
 
@@ -210,8 +287,10 @@ Now that we've set the filter, let's try plotting the points on the map again.
 # Plot base map with 
 ggplot() +
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  geom_sf(data = seal_dead_sa, aes(color = "Carcass observations"), size = 2) +
-  scale_color_manual(values = c("red")) +
+  geom_sf(data = seal_dead_sa, aes(color = "Carcass Observations"), size = 2) +
+   geom_sf(data = colony_sa, aes(color = "Seal Colonies"), shape = 17, 
+           size = 3) +
+  scale_color_manual(values = c("red", "blue")) +
   labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
        Carcass Sightings in South Africa") +
   theme_minimal()
@@ -219,6 +298,22 @@ ggplot() +
 ```
 
 It worked! Now onto the interactive map!
+
+Okay, cool, now that that's sorted, we can also save the data as `.csv` or 
+`.geojson` if we wanted - I'll do it so that other's can view the metadata. 
+
+```{r save the data}
+# Save as .csv in the data file so we have a file with the necessary metadata 
+# available for anyone interested
+write_csv(seal_dead_sa, "data/seal_dead.csv")
+
+# I'll save the colony_sa data as a .csv too since this'll only contain the 
+
+# Save as GeoJSON for GIS applications for anyone who would like to download 
+# the file for themselves
+st_write(seal_dead_sa, "data/seal_dead.geojson", delete_dsn = TRUE)
+
+```
 
 ## **Making the map interactive**
 
