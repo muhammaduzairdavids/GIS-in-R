@@ -231,7 +231,7 @@ filter_south_africa_sf <- function(seal_dead_sf) {
 seal_dead_sa <- filter_south_africa_sf(seal_dead_sf)
 
 # Preview filtered data
-head(seal_dead_sa)
+print(seal_dead_sa)
 
 ```
 
@@ -271,26 +271,53 @@ st_write(colony_sf, "data/seal_colony.geojson", delete_dsn = TRUE)
 ## **Making the map interactive**
 
 To make our map interactive we'll use `leaflet`, this will allow people to zoom
-in and out of the map and investigate individual points on the map. 
+in and out of the map and zoom in on the individual points on the map, which 
+are currently cluttered. 
 
 ```{r interactive mapping}
 # Create leaflet map
 leaflet() %>%
-  addTiles() %>%  # Add OpenStreetMap basemap
+  addTiles() %>%  # OpenStreetMap basemap
+  
+  # Add South Africa boundary
   addPolygons(data = south_africa, 
               color = "black", 
               fillColor = "lightgray", 
               fillOpacity = 0.5, 
               weight = 1, 
               popup = ~name) %>%
+  
+  # Add Seal Carcass Observations with detailed popups
   addCircleMarkers(data = seal_dead_sa, 
                    color = "red", 
                    radius = 3, 
-                   popup = ~paste("Location:", place_guess)) %>%
-  addLegend(position = "bottomright", colors = "red", labels = "Carcass observations") %>%
+                   popup = ~paste(
+                     "<b>Recorded by:</b>", user_login, "<br>",
+                     "<b>Location:</b>", place_guess, "<br>",
+                     "<b>Date:</b>", observed_on, "<br>",
+                     "<b>Description:</b>", description, "<br>",
+                     "<b>Tags:</b>", tag_list, "<br>",
+                     "<a href='", url, "' target='_blank'>View on iNaturalist</a>",
+                     "<img src='", image_url, "' width='200px' height='150px'>"
+                   )) %>%
+  
+  # Add Seal Breeding Colonies with coordinate popups
+  addCircleMarkers(data = colony_sf, 
+                   color = "blue", 
+                   radius = 4, 
+                   popup = ~paste(
+                     "<b>Colony:</b>", Colony.Name, "<br>"
+                   )) %>%
+  
+  # Add Legend
+  addLegend(position = "bottomright", 
+            colors = c("red", "blue"), 
+            labels = c("Carcass observations", "Seal breeding colonies")) %>%
+  
+  # Add Scale Bar and MiniMap
   addScaleBar(position = "bottomleft") %>%
   addMiniMap(toggleDisplay = TRUE)
 
-
 ```
+
 
