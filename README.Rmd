@@ -17,11 +17,9 @@ library(sf)                # Spatial data handling
 library(ggplot2)           # Static maps
 library(ggspatial)         # Static maps
 library(leaflet)           # Interactive maps
-library(htmltools)         # Interactive maps
-library(mapview)           # Interactive maps
+library(leaflet.extras)    # Allows more interactive features
 library(rnaturalearth)     # Base map data
 library(rnaturalearthdata) # Additional features
-library(terra)             # Raster processing (if needed)
 library(tidyverse)         # Data cleaning
 library(dplyr)             # Data wrangling
 library(readr)             # Reading/writing .csv files
@@ -272,20 +270,14 @@ st_write(colony_sf, "data/seal_colony.geojson", delete_dsn = TRUE)
 
 To make our map interactive we'll use `leaflet`, this will allow people to zoom
 in and out of the map and zoom in on the individual points on the map, which 
-are currently cluttered. 
+are currently cluttered. We'll also create pop-ups that allow the viewer to see
+the images attached to each observation, when the observation was made, who it 
+was made by, and an interactive link to the original observation. 
 
 ```{r interactive mapping}
 # Create leaflet map
 leaflet() %>%
-  addTiles() %>%  # OpenStreetMap basemap
-  
-  # Add South Africa boundary
-  addPolygons(data = south_africa, 
-              color = "black", 
-              fillColor = "lightgray", 
-              fillOpacity = 0.5, 
-              weight = 1, 
-              popup = ~name) %>%
+  addProviderTiles("Esri.WorldImagery") %>%  # High-detail satellite imagery
   
   # Add Seal Carcass Observations with detailed popups
   addCircleMarkers(data = seal_dead_sa, 
@@ -297,11 +289,12 @@ leaflet() %>%
                      "<b>Date:</b>", observed_on, "<br>",
                      "<b>Description:</b>", description, "<br>",
                      "<b>Tags:</b>", tag_list, "<br>",
-                     "<a href='", url, "' target='_blank'>View on iNaturalist</a>",
+                     "<a href='", url, 
+                     "' target='_blank'>View on iNaturalist</a>",
                      "<img src='", image_url, "' width='200px' height='150px'>"
                    )) %>%
   
-  # Add Seal Breeding Colonies with coordinate popups
+  # Add Seal Colonies with coordinate popups
   addCircleMarkers(data = colony_sf, 
                    color = "blue", 
                    radius = 4, 
@@ -319,5 +312,3 @@ leaflet() %>%
   addMiniMap(toggleDisplay = TRUE)
 
 ```
-
-
