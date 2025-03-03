@@ -62,7 +62,7 @@ keywords may also bring back results which retrieve observations of skeletal
 remains, which is not what we want, since the presence of skeletal remains may
 mean that the animal died long before the earliest identified case of rabies 
 outbreaks, which according to a government report is 5 August 2022 
-[(Maja, 2024)](https://www.dalrrd.gov.za/images/outbreaks/Rabies/2024/rabies-in-seals_dalrrd-report_oct2024_final.pdf). For this reason we will also be filtering out observations 
+(Maja, 2024). For this reason we will also be filtering out observations 
 before this date.  
 
 ```{r define keywords}
