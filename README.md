@@ -5,7 +5,7 @@ This repository contains the code I used to create my project for the completion
 The map produced by the code in this repo was created using a combination of iNaturalist observations of seal carcasses, seal colony data from Kirkman *et al* (2012) and a government report about rabies outbreaks (2024). The goal of the map is to plot seal carcass observations against the seal colony and rabies outbreak data, and hopefully determine whether the carcass strandings may be a good indicator of colonies at risk of rabies (by comparing them to past rabies outbreaks).
 
 # The Data
-Working on it...
+All the data used and produced during this project is available under the [data](https://github.com/muhammaduzairdavids/GIS-in-R/tree/main/data) folder in this repository.
 
 # View the Maps
 To view the final map click [here](https://htmlview.glitch.me/?https://github.com/muhammaduzairdavids/GIS-in-R/blob/main/seal_rabies_map.html).
