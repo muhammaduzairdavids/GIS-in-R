@@ -1,0 +1,32 @@
+{
+"type": "FeatureCollection",
+"name": "seal_rabies",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Name": "Kommetjie" }, "geometry": { "type": "Point", "coordinates": [ 18.32846466, -34.13700485 ] } },
+{ "type": "Feature", "properties": { "Name": "Noordhoek" }, "geometry": { "type": "Point", "coordinates": [ 18.35387313, -34.0976525 ] } },
+{ "type": "Feature", "properties": { "Name": "Kalk Bay" }, "geometry": { "type": "Point", "coordinates": [ 18.44863727, -34.12782005 ] } },
+{ "type": "Feature", "properties": { "Name": "Melkbosstrand" }, "geometry": { "type": "Point", "coordinates": [ 18.44215005, -33.72434974 ] } },
+{ "type": "Feature", "properties": { "Name": "Fish Hoek" }, "geometry": { "type": "Point", "coordinates": [ 18.43372689, -34.13768681 ] } },
+{ "type": "Feature", "properties": { "Name": "Plettenberg Bay" }, "geometry": { "type": "Point", "coordinates": [ 23.37159588, -34.07851977 ] } },
+{ "type": "Feature", "properties": { "Name": "Pringle Bay" }, "geometry": { "type": "Point", "coordinates": [ 18.82911833, -34.34398242 ] } },
+{ "type": "Feature", "properties": { "Name": "Strand" }, "geometry": { "type": "Point", "coordinates": [ 18.81774402, -34.10673167 ] } },
+{ "type": "Feature", "properties": { "Name": "Blouberg" }, "geometry": { "type": "Point", "coordinates": [ 18.47738152, -33.82478158 ] } },
+{ "type": "Feature", "properties": { "Name": "Muizenberg" }, "geometry": { "type": "Point", "coordinates": [ 18.47052684, -34.10852986 ] } },
+{ "type": "Feature", "properties": { "Name": "Die Dam" }, "geometry": { "type": "Point", "coordinates": [ 19.68351271, -34.76682084 ] } },
+{ "type": "Feature", "properties": { "Name": "Glencairn" }, "geometry": { "type": "Point", "coordinates": [ 18.43164086, -34.16000908 ] } },
+{ "type": "Feature", "properties": { "Name": "Yzerfontein" }, "geometry": { "type": "Point", "coordinates": [ 18.16075639, -33.34155792 ] } },
+{ "type": "Feature", "properties": { "Name": "Mossel Bay" }, "geometry": { "type": "Point", "coordinates": [ 22.13802422, -34.17795465 ] } },
+{ "type": "Feature", "properties": { "Name": "Pearly Beach" }, "geometry": { "type": "Point", "coordinates": [ 19.49918812, -34.66912843 ] } },
+{ "type": "Feature", "properties": { "Name": "Hartenbos" }, "geometry": { "type": "Point", "coordinates": [ 22.12088663, -34.1229255 ] } },
+{ "type": "Feature", "properties": { "Name": "Cape Town" }, "geometry": { "type": "Point", "coordinates": [ 18.43124388, -33.91214606 ] } },
+{ "type": "Feature", "properties": { "Name": "Groot Brakrivier" }, "geometry": { "type": "Point", "coordinates": [ 22.23760771, -34.05710343 ] } },
+{ "type": "Feature", "properties": { "Name": "Velddrif" }, "geometry": { "type": "Point", "coordinates": [ 18.15445416, -32.76288838 ] } },
+{ "type": "Feature", "properties": { "Name": "Langebaan" }, "geometry": { "type": "Point", "coordinates": [ 18.03005854, -33.0913812 ] } },
+{ "type": "Feature", "properties": { "Name": "Lambert's Bay" }, "geometry": { "type": "Point", "coordinates": [ 18.31269635, -32.08568611 ] } },
+{ "type": "Feature", "properties": { "Name": "Groenriviermond" }, "geometry": { "type": "Point", "coordinates": [ 17.57801498, -30.86582048 ] } },
+{ "type": "Feature", "properties": { "Name": "Namakwa" }, "geometry": { "type": "Point", "coordinates": [ 17.41122, -30.56218 ] } },
+{ "type": "Feature", "properties": { "Name": "Kleinsee" }, "geometry": { "type": "Point", "coordinates": [ 16.998957, -29.569517 ] } },
+{ "type": "Feature", "properties": { "Name": "Cliff Point" }, "geometry": { "type": "Point", "coordinates": [ 16.81833333, -29.09833333 ] } }
+]
+}

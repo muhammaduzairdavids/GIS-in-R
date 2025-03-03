@@ -139,7 +139,9 @@ Kirkman *et al.* (2012) data may also be slightly off, since the original
 coordinates were in *degrees and decimal minutes* format rather than 
 *decimal degrees* format, which is the coordinate format we want. I had tried 
 to correct some of these when I compiled the `.csv`, but some locations were 
-difficult to pinpoint by name. 
+difficult to pinpoint by name, so view the colony locations with a grain of 
+salt. I also added some colonies later based on areas I found searching for the
+correct location of the other colonies on Google Earth. 
 
 Anyhoo, let's start by loading the colony data which I compiled into a .`csv` 
 using information from both Kirkman *et al* (2012) and Maja (2024). 
@@ -153,6 +155,20 @@ head(data_colony)
 
 ```
 
+Now for the rabies data. Note that for the rabies, it is not the exact location
+the outbreak occurred, but an approximate guess - since the government report 
+has made my life very difficult by providing a very broad indicator of the 
+location of the outbreaks, e.g. "Cape Town".  Also note that I don't separate 
+the outbreak locations by the date the samples were taken (which they mention 
+in the government report).
+
+```{r loading the rabies data}
+# Read in the .csv
+data_rabies <- read.csv("data/data_rabies.csv")
+
+# Take a look at the data
+head(data_rabies)
+```
 
 ## **Convert the data to a spatial object (sf)**
 
@@ -171,6 +187,12 @@ seal_dead_sf <- st_as_sf(seal_dead,
 colony_sf <- st_as_sf(data_colony,
                          coords = c("Longitude", "Latitude"),
                          crs = 4326)
+
+# Convert the rabies data to sf object (WGS84 - EPSG:4326)
+rabies_sf <- st_as_sf(data_rabies,
+                         coords = c("Longitude", "Latitude"),
+                         crs = 4326)
+
 
 ```
 
@@ -193,14 +215,31 @@ Now that we have the base map saved, we can plot our points.
 ```{r plot the map}
 # Plot base map with 
 ggplot() +
+  
+  # Add the South African boundary
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  geom_sf(data = seal_dead_sf, aes(color = "Carcass Observations"), size = 2) +
+  
+  # Add the seal carcass observations
+  geom_sf(data = seal_dead_sf, aes(color = "Carcass Observations"), 
+          size = 2) +
+  
+  # Add the seal colony data
   geom_sf(data = colony_sf, aes(color = "Seal Colonies"), shape = 17, 
-          size = 3) + # Adding the colonies
-  scale_color_manual(values = c("red", "blue")) +
-  labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
-       Carcass Sightings in South Africa") +
+          size = 3) + 
+  
+  # Add the rabies outbreak data
+  geom_sf(data = rabies_sf, aes(color = "Rabies Outbreaks"), shape = 10, 
+          size = 2) +
+  
+  # Colour blind friendly colour palette
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  
+  labs(title = 
+  "Cape Fur Seal (Arctocephalus pusillus) Carcass Sightings in 
+   South Africa in Relation to Seal Colonies and Rabies Outbreaks") +
+  
   theme_minimal()
+  
 
 ```
 
@@ -238,15 +277,31 @@ Now that we've set the filter, let's try plotting the points on the map again.
 ```{r second attempt at the plot}
 # Plot base map with 
 ggplot() +
+  
+  # Add the South African boundary
   geom_sf(data = south_africa, fill = "lightgray", color = "black") +
-  geom_sf(data = seal_dead_sa, aes(color = "Carcass Observations"), size = 2) +
-   geom_sf(data = colony_sf, aes(color = "Seal Colonies"), shape = 17, 
-           size = 3) +
-  scale_color_manual(values = c("red", "blue")) +
-  labs(title = "Cape Fur Seal (Arctocephalus pusillus) 
-       Carcass Sightings in South Africa") +
+  
+  # Add the updated seal carcass observations
+  geom_sf(data = seal_dead_sa, aes(color = "Carcass Observations"), 
+          size = 2) +
+  
+  # Add the seal colony data
+  geom_sf(data = colony_sf, aes(color = "Seal Colonies"), shape = 17, 
+          size = 3) + 
+  
+  # Add the rabies outbreak data
+  geom_sf(data = rabies_sf, aes(color = "Rabies Outbreaks"), shape = 10, 
+          size = 2) +
+  
+  # Colour blind friendly colour palette
+  scale_color_manual(values = c("#E69F00", "#56B4E9", "#009E73")) +
+  
+  labs(title = 
+  "Cape Fur Seal (Arctocephalus pusillus) Carcass Sightings in 
+   South Africa in Relation to Seal Colonies and Rabies Outbreaks") +
+  
   theme_minimal()
-
+  
 ```
 
 It worked! Now onto the interactive map!
@@ -263,6 +318,7 @@ write_csv(seal_dead_sa, "data/seal_dead.csv")
 # the file for themselves
 st_write(seal_dead_sa, "data/seal_dead.geojson", delete_dsn = TRUE)
 st_write(colony_sf, "data/seal_colony.geojson", delete_dsn = TRUE)
+st_write(rabies_sf, "data/seal_rabies.geojson", delete_dsn = TRUE)
 
 ```
 
@@ -281,7 +337,7 @@ leaflet() %>%
   
   # Add Seal Carcass Observations with detailed popups
   addCircleMarkers(data = seal_dead_sa, 
-                   color = "red", 
+                   color = "#E69F00",
                    radius = 3, 
                    popup = ~paste(
                      "<b>Recorded by:</b>", user_login, "<br>",
@@ -296,19 +352,45 @@ leaflet() %>%
   
   # Add Seal Colonies with coordinate popups
   addCircleMarkers(data = colony_sf, 
-                   color = "blue", 
+                   color = "#56B4E9", 
                    radius = 4, 
                    popup = ~paste(
                      "<b>Colony:</b>", Colony.Name, "<br>"
                    )) %>%
   
+  # Add Seal Rabies Outbreaks with coordinate popups
+  addCircleMarkers(data = rabies_sf, 
+                   color = "#009E73",  
+                   radius = 4, 
+                   popup = ~paste(
+                     "<b>Location of Outbreak:</b>", Name, "<br>"
+                   )) %>%
+  
   # Add Legend
   addLegend(position = "bottomright", 
-            colors = c("red", "blue"), 
-            labels = c("Carcass observations", "Seal breeding colonies")) %>%
+            colors = c("#E69F00", "#56B4E9", "#009E73"), 
+            labels = c("Carcass observations", "Seal breeding colonies", 
+                       "Location of rabies outbreaks")) %>%
   
   # Add Scale Bar and MiniMap
   addScaleBar(position = "bottomleft") %>%
   addMiniMap(toggleDisplay = TRUE)
 
 ```
+
+And there you have it folks! A pretty picture and the end of this assignment.
+
+## **References**
+
+Kirkman, S.P., Yemane, D., Oosthuizen, W.H., Meÿer, M.A., Kotze, 
+P.G.H., Skrypzeck, H., Vaz Velho, F. and Underhill, L.G. (2012). 
+Spatio-temporal shifts of the dynamic Cape fur seal population in southern 
+Africa, based on aerial censuses (1972-2009). Marine Mammal Science, 29(3), 
+pp.497–524. doi:https://doi.org/10.1111/j.1748-7692.2012.00584.x.
+
+Maja, M. (2024). Rabies in Cape fur seals:  outbreak update report. Department 
+of Agriculture, Land Reform and Rural Development. Available at: https://www.dalrrd.gov.za/images/outbreaks/Rabies/2024/rabies-in-seals_dalrrd-report_oct2024_final.pdf.
+
+
+
+
