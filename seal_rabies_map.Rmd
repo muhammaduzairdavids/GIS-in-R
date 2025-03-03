@@ -61,9 +61,8 @@ keywords will help us to filter out observations of dead seals. However, these
 keywords may also bring back results which retrieve observations of skeletal
 remains, which is not what we want, since the presence of skeletal remains may
 mean that the animal died long before the earliest identified case of rabies 
-outbreaks, which according to a government report is 5 August 2022 
-[(Maja, 2024)](https://www.dalrrd.gov.za/images/outbreaks/Rabies/2024/rabies-in-seals_dalrrd-report_oct2024_final.pdf). For this reason we will also be filtering out observations 
-before this date.  
+outbreaks, which according to a government report is 5 August 2022 (Maja, 2024). 
+For this reason we will also be filtering out observations before this date.  
 
 ```{r define keywords}
 # Define keywords indicating death in the seals
@@ -160,7 +159,9 @@ the outbreak occurred, but an approximate guess - since the government report
 has made my life very difficult by providing a very broad indicator of the 
 location of the outbreaks, e.g. "Cape Town".  Also note that I don't separate 
 the outbreak locations by the date the samples were taken (which they mention 
-in the government report).
+in the government report) since I'm more interested in where the outbreak 
+occurred in relation to the location of the colonies and where carcasses are 
+washing up.
 
 ```{r loading the rabies data}
 # Read in the .csv
