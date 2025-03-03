@@ -61,14 +61,8 @@ keywords will help us to filter out observations of dead seals. However, these
 keywords may also bring back results which retrieve observations of skeletal
 remains, which is not what we want, since the presence of skeletal remains may
 mean that the animal died long before the earliest identified case of rabies 
-<<<<<<< HEAD
 outbreaks, which according to a government report is 5 August 2022 (Maja, 2024). 
 For this reason we will also be filtering out observations before this date.  
-=======
-outbreaks, which according to a government report is 5 August 2022 
-(Maja, 2024). For this reason we will also be filtering out observations 
-before this date.  
->>>>>>> 5f7d01ccf9a8e6154f74af219ab07ca1b1243397
 
 ```{r define keywords}
 # Define keywords indicating death in the seals
