@@ -2,7 +2,9 @@
 This repository contains the code I used to create my project for the completion of the GIS in R course by Jasper Slingsby.
 
 # 1. About the Map
-The map produced by the code in this repo was created using a combination of iNaturalist observations of seal carcasses, seal colony data from Kirkman *et al* (2012) and a government report about rabies outbreaks (2024). The goal of the map is to plot seal carcass observations against the seal colony and rabies outbreak data, and hopefully determine whether the carcass strandings may be a good indicator of colonies at risk of rabies (by comparing them to past rabies outbreaks).
+The map produced by the code in this repo was created using a combination of iNaturalist observations of seal carcasses, seal colony data from Kirkman *et al* (2012) and a government report about rabies outbreaks (2024). The goal of the map is to plot seal carcass observations against the seal colony and rabies outbreak data, and hopefully determine whether the carcass strandings may be a good indicator of colonies at risk of rabies (by comparing them to past rabies outbreaks). 
+
+The code I used to create this map is also available in .Rmd format under [`seal_rabies_map.Rmd`](https://github.com/muhammaduzairdavids/GIS-in-R/blob/main/seal_rabies_map.Rmd), there is also `.html` format that can be viewed using the link under the **3. View the Maps** section of this README.md.
 
 # 2. The Data
 All the data used and produced during this project is available under the [data](https://github.com/muhammaduzairdavids/GIS-in-R/tree/main/data) folder in this repository. You can find data on iNaturalist observations of seal carcasses, the locations of Cape Fur Seal colonies in South Africa, and the general locations of seal rabies outbreaks. For further reading on the data see this [`README.md`](https://github.com/muhammaduzairdavids/GIS-in-R/tree/main/data).
